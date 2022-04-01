@@ -1,5 +1,6 @@
 package br.sp.sangali.service;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -24,7 +25,7 @@ public class LocacaoServiceTest {
 		List<Filme> filme = Arrays.asList(new Filme("Top Gun", 5, 10.1));
 		Usuario usuario1 = new Usuario("Rodrigo");
 		LocacaoService locacaoService = new LocacaoService();
-		Locacao locacao = locacaoService.alugarFilme(usuario1, filme);
+		Locacao locacao = locacaoService.alugarFilme(usuario1, filme, new Date());
 		
 		// Verificar o valor da locação
 		Assert.assertEquals(locacao.getValor(), 10.1, 0.01);
@@ -43,7 +44,7 @@ public class LocacaoServiceTest {
 		Usuario usuario1 = new Usuario("Rodrigo");
 		LocacaoService locacaoService = new LocacaoService();
 		
-		locacaoService.alugarFilme(usuario1, filme);
+		locacaoService.alugarFilme(usuario1, filme, new Date());
 	}
 	
 	@Test
@@ -58,7 +59,7 @@ public class LocacaoServiceTest {
 		filme.add(new Filme("Matrix", 1, 15.0));
 		filme.add(new Filme("Tropa de Elite", 1, 20.0));
 		
-		locacao = locacaoService.alugarFilme(usuario1, filme);
+		locacao = locacaoService.alugarFilme(usuario1, filme, new Date());
 		
 		Assert.assertEquals(locacao.getValor().doubleValue(), 45.0, 0.01);
 	}
@@ -76,7 +77,7 @@ public class LocacaoServiceTest {
 		filme.add(new Filme("Tropa de Elite", 1, 20.0));
 		filme.add(new Filme("O Vento levou", 1, 10.0));
 		
-		locacao = locacaoService.alugarFilme(usuario1, filme);
+		locacao = locacaoService.alugarFilme(usuario1, filme, new Date());
 		
 		Assert.assertEquals(locacao.getValor().doubleValue(), 50.0, 0.01);
 	}
@@ -95,7 +96,7 @@ public class LocacaoServiceTest {
 		filme.add(new Filme("O Vento levou", 1, 10.0));
 		filme.add(new Filme("Homem Aranha", 1, 20.0));
 		
-		locacao = locacaoService.alugarFilme(usuario1, filme);
+		locacao = locacaoService.alugarFilme(usuario1, filme, new Date());
 		
 		Assert.assertEquals(locacao.getValor().doubleValue(), 55.0, 0.01);
 	}
@@ -116,10 +117,33 @@ public class LocacaoServiceTest {
 		filme.add(new Filme("Capitão Philips", 1, 10.0));
 
 		
-		locacao = locacaoService.alugarFilme(usuario1, filme);
+		locacao = locacaoService.alugarFilme(usuario1, filme, new Date());
 		
 		Assert.assertEquals(locacao.getValor().doubleValue(), 55.0, 0.01);
 	}
+
+	@Test
+	public void ShouldDeliveryMonday() throws LocadoraException, FilmeSemEstoqueException, ParseException {
+
+		List<Filme> filme = new ArrayList<Filme>();
+		Usuario usuario1 = new Usuario("Rodrigo");
+		LocacaoService locacaoService = new LocacaoService();
+		Locacao locacao = new Locacao();
+		
+		filme.add(new Filme("Top Gun", 5, 15.0));
+		filme.add(new Filme("Matrix", 1, 15.0));
+		filme.add(new Filme("Tropa de Elite", 1, 20.0));
+		filme.add(new Filme("O Vento levou", 1, 10.0));
+		filme.add(new Filme("Homem Aranha", 1, 20.0));
+		filme.add(new Filme("Capitão Philips", 1, 10.0));
+
+		Date dataLocacao = DataUtils.obterData(02, 04, 2022);
+		
+		locacao = locacaoService.alugarFilme(usuario1, filme, dataLocacao);
+		
+		Assert.assertTrue(DataUtils.verificarDiaSemana(locacao.getDataRetorno(), 2));
+	}
+
 
 
 }

@@ -10,10 +10,11 @@ import br.sp.sangali.entidades.Locacao;
 import br.sp.sangali.entidades.Usuario;
 import br.sp.sangali.exceptions.FilmeSemEstoqueException;
 import br.sp.sangali.exceptions.LocadoraException;
+import br.sp.sangali.utils.DataUtils;
 
 public class LocacaoService {
 	
-	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes) throws LocadoraException, FilmeSemEstoqueException{
+	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes, Date dataLocacao) throws LocadoraException, FilmeSemEstoqueException{
 		
 		if (usuario == null) {
 			throw new LocadoraException("Usuário não informado");
@@ -26,7 +27,7 @@ public class LocacaoService {
 		Locacao locacao = new Locacao();
 		locacao.setFilmes(filmes);
 		locacao.setUsuario(usuario);
-		locacao.setDataLocacao(new Date());
+		locacao.setDataLocacao(dataLocacao);
 		
 		double valorTotalLocacao = 0d;
 		double desconto= 0;
@@ -55,8 +56,10 @@ public class LocacaoService {
 		locacao.setValor(valorTotalLocacao);
 		
 		//Entrega no dia seguinte
-		Date dataEntrega = new Date();
-		dataEntrega = adicionarDias(dataEntrega, 1);
+		Date dataEntrega = adicionarDias(dataLocacao, 1);
+		// Verificar se é sabado, se for, adicionar mais um dia para entregar na segunda
+		if (DataUtils.verificarDiaSemana(dataLocacao, 7)) dataEntrega = adicionarDias(dataEntrega, 1);	
+
 		locacao.setDataRetorno(dataEntrega);
 		
 		//Salvando a locacao...	
