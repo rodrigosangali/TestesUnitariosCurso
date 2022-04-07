@@ -5,6 +5,7 @@ import static br.sp.sangali.utils.DataUtils.adicionarDias;
 import java.util.Date;
 import java.util.List;
 
+import br.sp.sangali.daos.LocacaoDAO;
 import br.sp.sangali.entidades.Filme;
 import br.sp.sangali.entidades.Locacao;
 import br.sp.sangali.entidades.Usuario;
@@ -14,6 +15,8 @@ import br.sp.sangali.utils.DataUtils;
 
 public class LocacaoService {
 	
+	private LocacaoDAO dao;
+	
 	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes, Date dataLocacao) throws LocadoraException, FilmeSemEstoqueException{
 		
 		if (usuario == null) {
@@ -21,7 +24,7 @@ public class LocacaoService {
 		}
 		
 		if (filmes == null) {
-			throw new LocadoraException("Filme não informado");
+			throw new FilmeSemEstoqueException("Filme não informado");
 		}
 
 		Locacao locacao = new Locacao();
@@ -34,7 +37,7 @@ public class LocacaoService {
 		for (int i=0; i<filmes.size(); i++){
 			
 			if (filmes.get(i).getEstoque() == 0) {
-				throw new FilmeSemEstoqueException();
+				throw new FilmeSemEstoqueException("Filme não informado");
 			}
 			
 			switch(i){
@@ -63,11 +66,17 @@ public class LocacaoService {
 		locacao.setDataRetorno(dataEntrega);
 		
 		//Salvando a locacao...	
-		//TODO adicionar mÃ©todo para salvar
+		dao.salvar(locacao);
 		
 		return locacao;
 	}
 
+	
+	public void setLocacaoDAO(LocacaoDAO dao) {
+		this.dao = dao;
+	}
+	
+	// MAIN
 	public static void main(String[] args) {
 		
 	}

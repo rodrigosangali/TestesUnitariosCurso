@@ -7,7 +7,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+
+import br.sp.sangali.daos.LocacaoDAO;
+import br.sp.sangali.daos.LocacaoDAOFake;
 import br.sp.sangali.entidades.Filme;
 import br.sp.sangali.entidades.Locacao;
 import br.sp.sangali.entidades.Usuario;
@@ -19,12 +23,20 @@ import br.sp.sangali.utils.DataUtils;
 
 public class LocacaoServiceTest {
 
+	public LocacaoService locacaoService;
+	
+	@Before
+	public void setup() {
+		locacaoService = new LocacaoService();
+		LocacaoDAO dao = new LocacaoDAOFake();
+		locacaoService.setLocacaoDAO(dao);
+	}
+
 	@Test
 	public void alugarFilmeTest() throws Exception {
 		
 		List<Filme> filme = Arrays.asList(new Filme("Top Gun", 5, 10.1));
 		Usuario usuario1 = new Usuario("Rodrigo");
-		LocacaoService locacaoService = new LocacaoService();
 		Locacao locacao = locacaoService.alugarFilme(usuario1, filme, new Date());
 		
 		// Verificar o valor da locação
@@ -42,8 +54,6 @@ public class LocacaoServiceTest {
 		
 		List<Filme> filme = Arrays.asList(new Filme("Top Gun", 0, 10.1));
 		Usuario usuario1 = new Usuario("Rodrigo");
-		LocacaoService locacaoService = new LocacaoService();
-		
 		locacaoService.alugarFilme(usuario1, filme, new Date());
 	}
 	
@@ -52,7 +62,6 @@ public class LocacaoServiceTest {
 
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
-		LocacaoService locacaoService = new LocacaoService();
 		Locacao locacao = new Locacao();
 		
 		filme.add(new Filme("Top Gun", 5, 15.0));
@@ -69,7 +78,6 @@ public class LocacaoServiceTest {
 
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
-		LocacaoService locacaoService = new LocacaoService();
 		Locacao locacao = new Locacao();
 		
 		filme.add(new Filme("Top Gun", 5, 15.0));
@@ -87,7 +95,6 @@ public class LocacaoServiceTest {
 
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
-		LocacaoService locacaoService = new LocacaoService();
 		Locacao locacao = new Locacao();
 		
 		filme.add(new Filme("Top Gun", 5, 15.0));
@@ -106,7 +113,6 @@ public class LocacaoServiceTest {
 
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
-		LocacaoService locacaoService = new LocacaoService();
 		Locacao locacao = new Locacao();
 		
 		filme.add(new Filme("Top Gun", 5, 15.0));
@@ -127,7 +133,6 @@ public class LocacaoServiceTest {
 
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
-		LocacaoService locacaoService = new LocacaoService();
 		Locacao locacao = new Locacao();
 		
 		filme.add(new Filme("Top Gun", 5, 15.0));
