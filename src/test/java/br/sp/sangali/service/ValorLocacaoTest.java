@@ -12,16 +12,22 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mockito;
 
+import br.sp.sangali.daos.LocacaoDAO;
 import br.sp.sangali.entidades.Filme;
 import br.sp.sangali.entidades.Locacao;
 import br.sp.sangali.entidades.Usuario;
 import br.sp.sangali.exceptions.FilmeSemEstoqueException;
 import br.sp.sangali.exceptions.LocadoraException;
 import br.sp.sangali.servicos.LocacaoService;
+import br.sp.sangali.servicos.SPCService;
 
 @RunWith(Parameterized.class)
 public class ValorLocacaoTest {
+	
+	public LocacaoService locacaoService;
+	private SPCService spcService;
 	
 	@Parameter
 	public List<Filme> filmes;
@@ -31,12 +37,16 @@ public class ValorLocacaoTest {
 
 	@Parameter(value=2)
 	public String cenario;
-
-	private LocacaoService locacaoService;
 	
 	@Before
 	public void setup() {
 		locacaoService = new LocacaoService();
+		LocacaoDAO dao = Mockito.mock(LocacaoDAO.class);
+		spcService = Mockito.mock(SPCService.class);
+		
+		locacaoService.setLocacaoDAO(dao);
+		locacaoService.setSPCService(spcService);
+		
 	}
 	
 	private static Filme filme1 = new Filme("Top Gun", 5, 15.0);

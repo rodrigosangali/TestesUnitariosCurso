@@ -8,28 +8,51 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
+import br.sp.sangali.builders.FilmeBuilder;
+import br.sp.sangali.builders.LocacaoBuilder;
+import br.sp.sangali.builders.UsuarioBuilder;
 import br.sp.sangali.daos.LocacaoDAO;
-import br.sp.sangali.daos.LocacaoDAOFake;
 import br.sp.sangali.entidades.Filme;
 import br.sp.sangali.entidades.Locacao;
 import br.sp.sangali.entidades.Usuario;
 import br.sp.sangali.exceptions.FilmeSemEstoqueException;
 import br.sp.sangali.exceptions.LocadoraException;
+import br.sp.sangali.servicos.EmailService;
 import br.sp.sangali.servicos.LocacaoService;
+import br.sp.sangali.servicos.SPCService;
 import br.sp.sangali.utils.DataUtils;
 
 
 public class LocacaoServiceTest {
 
-	public LocacaoService locacaoService;
+	private LocacaoService locacaoService;
+	private SPCService spcService;
+	private EmailService emailService;
+	private LocacaoDAO dao;
+	
+	
+	@Rule
+	public ErrorCollector error = new ErrorCollector();
+	
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 	
 	@Before
 	public void setup() {
 		locacaoService = new LocacaoService();
-		LocacaoDAO dao = new LocacaoDAOFake();
+		dao = Mockito.mock(LocacaoDAO.class);
+		spcService = Mockito.mock(SPCService.class);
+		emailService = Mockito.mock(EmailService.class);
+
 		locacaoService.setLocacaoDAO(dao);
+		locacaoService.setSPCService(spcService);
+		locacaoService.setEmailService(emailService);
 	}
 
 	@Test
@@ -109,7 +132,7 @@ public class LocacaoServiceTest {
 	}
 
 	@Test
-	public void ShouldDescontSixthRentMovie() throws LocadoraException, FilmeSemEstoqueException {
+	public void shouldDescontSixthRentMovie() throws LocadoraException, FilmeSemEstoqueException {
 
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
@@ -129,7 +152,7 @@ public class LocacaoServiceTest {
 	}
 
 	@Test
-	public void ShouldDeliveryMonday() throws LocadoraException, FilmeSemEstoqueException, ParseException {
+	public void shouldDeliveryMonday() throws LocadoraException, FilmeSemEstoqueException, ParseException {
 
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
@@ -149,8 +172,46 @@ public class LocacaoServiceTest {
 		Assert.assertTrue(DataUtils.verificarDiaSemana(locacao.getDataRetorno(), 2));
 	}
 
+	@Test
+	public void notShouldUserNegatived() throws LocadoraException, FilmeSemEstoqueException {
+		
+		List<Filme> filme = new ArrayList<Filme>();
+		Usuario usuario1 = new Usuario("Rodrigo");
+		
+		Mockito.when(spcService.possuiNegativado(usuario1)).thenReturn(true);
 
+		exception.expect(LocadoraException.class);
+		exception.expectMessage("Usuario Negativado");
+		
+		filme.add(new Filme("Top Gun", 5, 15.0));
+		locacaoService.alugarFilme(usuario1, filme, new Date());
+		
+		Mockito.verify(spcService).possuiNegativado(usuario1);
+		
 
+	}
+
+	
+	
+	@Test
+	public void deveEnviarEmailParaLocacoesAtrasadas() {
+		
+		Usuario usuario = UsuarioBuilder.umUsuario().agora();
+		
+		List<Locacao> locacoes = Arrays.asList(
+				LocacaoBuilder.umaLocacao()
+					.comUsuario(usuario)
+					.comDataRetorno(DataUtils.obterDataComDiferencaDias(-2))
+					.agora());
+		
+		Mockito.when(dao.obterLocacoesPendetes()).thenReturn(locacoes);
+		
+		locacaoService.notificarAtrasasos();
+		
+		Mockito.verify(emailService).notificarAtraso(usuario);
+		
+		
+	}
 }
 
 

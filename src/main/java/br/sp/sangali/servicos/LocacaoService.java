@@ -16,6 +16,8 @@ import br.sp.sangali.utils.DataUtils;
 public class LocacaoService {
 	
 	private LocacaoDAO dao;
+	private SPCService spcService;
+	private EmailService emailService;
 	
 	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes, Date dataLocacao) throws LocadoraException, FilmeSemEstoqueException{
 		
@@ -25,6 +27,12 @@ public class LocacaoService {
 		
 		if (filmes == null) {
 			throw new FilmeSemEstoqueException("Filme não informado");
+		}
+		
+		
+		if (spcService.possuiNegativado(usuario)) {
+			throw new LocadoraException("Usuario Negativado"); 
+			
 		}
 
 		Locacao locacao = new Locacao();
@@ -72,8 +80,23 @@ public class LocacaoService {
 	}
 
 	
+	public void notificarAtrasasos() {
+		List<Locacao> locacoes = dao.obterLocacoesPendetes();
+		for(Locacao locacao: locacoes) {
+			emailService.notificarAtraso(locacao.getUsuario());
+		}
+	}
+	
 	public void setLocacaoDAO(LocacaoDAO dao) {
 		this.dao = dao;
+	}
+	
+	public void setSPCService(SPCService spcService) {
+		this.spcService = spcService;
+	}
+	
+	public void setEmailService(EmailService emailService) {
+		this.emailService = emailService;
 	}
 	
 	// MAIN
