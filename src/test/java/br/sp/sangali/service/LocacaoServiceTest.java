@@ -191,8 +191,6 @@ public class LocacaoServiceTest {
 
 	}
 
-	
-	
 	@Test
 	public void deveEnviarEmailParaLocacoesAtrasadas() {
 		
