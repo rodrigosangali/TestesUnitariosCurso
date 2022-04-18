@@ -1,5 +1,7 @@
 package br.sp.sangali.service;
 
+import static org.hamcrest.CoreMatchers.is;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -173,41 +175,54 @@ public class LocacaoServiceTest {
 	}
 
 	@Test
-	public void notShouldUserNegatived() throws LocadoraException, FilmeSemEstoqueException {
+	public void notShouldUserNegatived() throws FilmeSemEstoqueException {
 		
 		List<Filme> filme = new ArrayList<Filme>();
 		Usuario usuario1 = new Usuario("Rodrigo");
 		
-		Mockito.when(spcService.possuiNegativado(usuario1)).thenReturn(true);
+		Mockito.when(spcService.possuiNegativado(Mockito.any(Usuario.class))).thenReturn(true);
 
-		exception.expect(LocadoraException.class);
-		exception.expectMessage("Usuario Negativado");
-		
 		filme.add(new Filme("Top Gun", 5, 15.0));
-		locacaoService.alugarFilme(usuario1, filme, new Date());
+		
+		try {
+			locacaoService.alugarFilme(usuario1, filme, new Date());
+		} catch (LocadoraException e) {
+			Assert.assertThat(e.getMessage(), is("Usuario Negativado"));
+		}
 		
 		Mockito.verify(spcService).possuiNegativado(usuario1);
-		
-
 	}
 
 	@Test
 	public void deveEnviarEmailParaLocacoesAtrasadas() {
 		
 		Usuario usuario = UsuarioBuilder.umUsuario().agora();
+		Usuario usuario2 = UsuarioBuilder.umUsuario().comNome("Usuario em dia").agora();
+		Usuario usuario3 = UsuarioBuilder.umUsuario().comNome("Outro atrasado").agora();
+		
 		
 		List<Locacao> locacoes = Arrays.asList(
-				LocacaoBuilder.umaLocacao()
-					.comUsuario(usuario)
-					.comDataRetorno(DataUtils.obterDataComDiferencaDias(-2))
-					.agora());
+				LocacaoBuilder.umaLocacao().atrasado().comUsuario(usuario).agora(),
+				LocacaoBuilder.umaLocacao().comUsuario(usuario2).agora(),
+				LocacaoBuilder.umaLocacao().atrasado().comUsuario(usuario3).agora(),
+				LocacaoBuilder.umaLocacao().atrasado().comUsuario(usuario3).agora());
 		
 		Mockito.when(dao.obterLocacoesPendetes()).thenReturn(locacoes);
 		
-		locacaoService.notificarAtrasasos();
+		locacaoService.notificarAtrasados();
 		
+		// Verifica se o usuario recebeu e-mail
 		Mockito.verify(emailService).notificarAtraso(usuario);
-		
+		// Verifica se o usuario 3 recebeu e-mail
+		Mockito.verify(emailService, Mockito.times(2)).notificarAtraso(usuario3);
+		// Verifica se o usuario 2 não recebeu o e-mail
+		Mockito.verify(emailService, Mockito.never()).notificarAtraso(usuario2);
+		// Verifica se mais nenhum email foi enviado de modo mais incisivo
+		Mockito.verifyNoMoreInteractions(emailService);
+		// Outra forma de verificar se nunca foi acionado
+		Mockito.verifyZeroInteractions(spcService);
+		// Verifica para qualquer usuario
+		Mockito.verify(emailService, Mockito.times(3)).notificarAtraso(Mockito.any(Usuario.class));
 		
 	}
 }
