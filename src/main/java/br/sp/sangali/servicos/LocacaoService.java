@@ -19,7 +19,7 @@ public class LocacaoService {
 	private SPCService spcService;
 	private EmailService emailService;
 	
-	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes, Date dataLocacao) throws LocadoraException, FilmeSemEstoqueException{
+	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes, Date dataLocacao) throws Exception{
 		
 		if (usuario == null) {
 			throw new LocadoraException("Usuário não informado");
@@ -30,7 +30,15 @@ public class LocacaoService {
 		}
 		
 		
-		if (spcService.possuiNegativado(usuario)) {
+		Boolean negativado = null; 
+		try {
+			negativado = spcService.possuiNegativado(usuario);
+			
+		}catch(Exception e) {
+			throw new LocadoraException("Problemas com SPC, tente novamente");
+		}
+		
+		if (negativado) {
 			throw new LocadoraException("Usuario Negativado"); 
 			
 		}
@@ -89,20 +97,5 @@ public class LocacaoService {
 		}
 	}
 	
-	public void setLocacaoDAO(LocacaoDAO dao) {
-		this.dao = dao;
-	}
 	
-	public void setSPCService(SPCService spcService) {
-		this.spcService = spcService;
-	}
-	
-	public void setEmailService(EmailService emailService) {
-		this.emailService = emailService;
-	}
-	
-	// MAIN
-	public static void main(String[] args) {
-		
-	}
 }

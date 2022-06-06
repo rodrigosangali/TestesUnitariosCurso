@@ -12,7 +12,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import br.sp.sangali.daos.LocacaoDAO;
 import br.sp.sangali.entidades.Filme;
@@ -26,7 +28,13 @@ import br.sp.sangali.servicos.SPCService;
 @RunWith(Parameterized.class)
 public class ValorLocacaoTest {
 	
-	public LocacaoService locacaoService;
+	@InjectMocks
+	private LocacaoService locacaoService;
+	
+	@Mock
+	private LocacaoDAO dao;
+	
+	@Mock
 	private SPCService spcService;
 	
 	@Parameter
@@ -40,13 +48,7 @@ public class ValorLocacaoTest {
 	
 	@Before
 	public void setup() {
-		locacaoService = new LocacaoService();
-		LocacaoDAO dao = Mockito.mock(LocacaoDAO.class);
-		spcService = Mockito.mock(SPCService.class);
-		
-		locacaoService.setLocacaoDAO(dao);
-		locacaoService.setSPCService(spcService);
-		
+		MockitoAnnotations.initMocks(this);
 	}
 	
 	private static Filme filme1 = new Filme("Top Gun", 5, 15.0);
@@ -71,7 +73,7 @@ public class ValorLocacaoTest {
 	}
 	
 	@Test
-	public void ShouldDescontRentMovie() throws LocadoraException, FilmeSemEstoqueException {
+	public void ShouldDescontRentMovie() throws Exception {
 
 		Usuario usuario1 = new Usuario("Rodrigo");
 		
