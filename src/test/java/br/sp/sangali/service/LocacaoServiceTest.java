@@ -1,12 +1,14 @@
 package br.sp.sangali.service;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -32,6 +35,8 @@ import br.sp.sangali.servicos.EmailService;
 import br.sp.sangali.servicos.LocacaoService;
 import br.sp.sangali.servicos.SPCService;
 import br.sp.sangali.utils.DataUtils;
+
+import br.sp.sangali.matchers.MatchersProprios;
 
 
 public class LocacaoServiceTest {
@@ -202,7 +207,7 @@ public class LocacaoServiceTest {
 		Usuario usuario = UsuarioBuilder.umUsuario().agora();
 		List<Filme> filmes = Arrays.asList(FilmeBuilder.umFilme().agora());
 		
-		//Mock do servico do SPC
+		//Mock do servico do SPC e lança erro 
 		Mockito.when(spcService.possuiNegativado(usuario)).thenThrow(new Exception("Falha castratrófica"));
 		
 		//Verificação das mensagens, sempre antes da execução do serviço
@@ -246,6 +251,29 @@ public class LocacaoServiceTest {
 		Mockito.verifyZeroInteractions(spcService);
 		// Verifica para qualquer usuario
 		Mockito.verify(emailService, Mockito.times(3)).notificarAtraso(Mockito.any(Usuario.class));
+		
+	}
+	
+	
+	@Test
+	public void deveProrrogarUmaAlocacao() {
+		
+		//cenario
+		Locacao locacao = LocacaoBuilder.umaLocacao().agora();
+		
+		//acao
+		locacaoService.prorrogarLocacao(locacao, 3);
+		
+		//verificacao
+		// Captura os dados passado dentro do salvar
+		ArgumentCaptor<Locacao> argCapt = ArgumentCaptor.forClass(Locacao.class);
+		Mockito.verify(dao).salvar(argCapt.capture());
+		Locacao locacaoRetornada = argCapt.getValue();
+		
+		error.checkThat(locacaoRetornada.getValor(), is(12.0));
+		error.checkThat(locacaoRetornada.getDataLocacao(), MatchersProprios.ehHoje());
+		error.checkThat(locacaoRetornada.getDataRetorno(), MatchersProprios.ehHojeComDiferencaDias(3));
+		
 		
 	}
 }
