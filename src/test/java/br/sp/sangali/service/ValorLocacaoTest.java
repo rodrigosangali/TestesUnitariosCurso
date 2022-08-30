@@ -2,7 +2,6 @@ package br.sp.sangali.service;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -20,8 +19,6 @@ import br.sp.sangali.daos.LocacaoDAO;
 import br.sp.sangali.entidades.Filme;
 import br.sp.sangali.entidades.Locacao;
 import br.sp.sangali.entidades.Usuario;
-import br.sp.sangali.exceptions.FilmeSemEstoqueException;
-import br.sp.sangali.exceptions.LocadoraException;
 import br.sp.sangali.servicos.LocacaoService;
 import br.sp.sangali.servicos.SPCService;
 
@@ -77,7 +74,7 @@ public class ValorLocacaoTest {
 
 		Usuario usuario1 = new Usuario("Rodrigo");
 		
-		Locacao locacao = locacaoService.alugarFilme(usuario1, filmes, new Date());
+		Locacao locacao = locacaoService.alugarFilme(usuario1, filmes);
 		
 		Assert.assertEquals(locacao.getValor().doubleValue(), valorDaLocacao, 0.01);
 	}

@@ -2,6 +2,7 @@ package br.sp.sangali.servicos;
 
 import static br.sp.sangali.utils.DataUtils.adicionarDias;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class LocacaoService {
 	private SPCService spcService;
 	private EmailService emailService;
 	
-	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes, Date dataLocacao) throws Exception{
+	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes) throws Exception{
 		
 		if (usuario == null) {
 			throw new LocadoraException("Usuário não informado");
@@ -46,8 +47,27 @@ public class LocacaoService {
 		Locacao locacao = new Locacao();
 		locacao.setFilmes(filmes);
 		locacao.setUsuario(usuario);
-		locacao.setDataLocacao(dataLocacao);
+		locacao.setDataLocacao(Calendar.getInstance().getTime());
 		
+		// Calcula o valor da locacao conforme o numero de filmes
+		locacao.setValor(calcularValorLocacao(filmes));
+		
+		//Entrega no dia seguinte
+		Date dataEntrega = adicionarDias(Calendar.getInstance().getTime(), 1);
+		// Verificar se é sabado, se for, adicionar mais um dia para entregar na segunda
+		if (DataUtils.verificarDiaSemana(dataEntrega, Calendar.SUNDAY)) dataEntrega = adicionarDias(dataEntrega, 1);	
+
+		locacao.setDataRetorno(dataEntrega);
+		
+		//Salvando a locacao...	
+		dao.salvar(locacao);
+		
+		return locacao;
+	}
+
+
+	private double calcularValorLocacao(List<Filme> filmes) throws FilmeSemEstoqueException {
+		System.out.println("Estou calculando...");
 		double valorTotalLocacao = 0d;
 		double desconto= 0;
 		for (int i=0; i<filmes.size(); i++){
@@ -72,19 +92,7 @@ public class LocacaoService {
 			}
 			valorTotalLocacao += filmes.get(i).getPrecoLocacao() - desconto;
 		}
-		locacao.setValor(valorTotalLocacao);
-		
-		//Entrega no dia seguinte
-		Date dataEntrega = adicionarDias(dataLocacao, 1);
-		// Verificar se é sabado, se for, adicionar mais um dia para entregar na segunda
-		if (DataUtils.verificarDiaSemana(dataLocacao, 7)) dataEntrega = adicionarDias(dataEntrega, 1);	
-
-		locacao.setDataRetorno(dataEntrega);
-		
-		//Salvando a locacao...	
-		dao.salvar(locacao);
-		
-		return locacao;
+		return valorTotalLocacao;
 	}
 
 	

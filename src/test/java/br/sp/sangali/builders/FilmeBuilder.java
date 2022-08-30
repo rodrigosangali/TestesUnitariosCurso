@@ -25,6 +25,12 @@ public class FilmeBuilder {
 		return this;
 	}
 	
+	public FilmeBuilder comValor(Double valor) {
+		filme.setPrecoLocacao(valor);
+		
+		return this;
+	}
+	
 	public Filme agora() {
 		return filme;
 	}
