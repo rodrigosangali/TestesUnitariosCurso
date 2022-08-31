@@ -1,4 +1,4 @@
-package br.sp.sangali.service;
+package br.sp.sangali.servicos;
 
 import java.util.Arrays;
 import java.util.Collection;

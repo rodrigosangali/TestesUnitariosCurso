@@ -23,6 +23,12 @@ public class Calculadora {
 		return Integer.valueOf(a) / Integer.valueOf(b);
 	}
 	
+	public int multiplica(int a, int b) {
+		
+		return a * b;
+		
+	}
+	
 	public static void main(String[] args) {
 		new Calculadora().divide("a", "b");
 	}
